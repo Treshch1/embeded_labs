@@ -1,0 +1,5 @@
+Time is calculated in microseconds
+N = 1500
+
+autocorrelation =  556
+intercorrelation = 514

@@ -131,6 +131,17 @@ def calculate_timedelta_lab1():
     return time_dict
 
 
+def calculate_timedelta_lab1():
+    time_dict = {}
+    for i in range(1, 6):
+        start = datetime.now()
+        generate_array_of_signals(i * 1000)
+        end = datetime.now()
+        delta = (end - start)
+        time_dict[i * 1000] = delta.microseconds
+    return time_dict
+
+
 if __name__ == '__main__':
     print('LAB 1')
     lab_1_signal = generate_chart(generate_array_of_signals(N), "lab1.png")
