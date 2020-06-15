@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,7 +20,9 @@ class DrawOption:
 
 def draw_plot(axes, data_plot, options_plot):
     axes.set_title(options_plot.pl_title)
-    if options_plot.pl_type == "plot":
+    if options_plot.pl_type == "bar":
+        axes.bar(options_plot.x_range, data_plot)
+    elif options_plot.pl_type == "plot":
         axes.plot(options_plot.x_range, data_plot)
 
 
@@ -66,7 +70,7 @@ def generate_chart(signal, file_name):
 def generate_spectrum(signal, file_name):
     x = np.fft.rfftfreq(N, 1./w)
     options = [
-       DrawOption("Spectrum", "plot", x_range=x),
+       DrawOption("Spectrum", "bar", x_range=x),
     ]
     draw([signal], options, file_name)
     return signal
@@ -86,8 +90,45 @@ def intercorr(a, v):
 
 def fft_function(signal):
     fft = np.fft.fft(signal)
-    fft_theo = np.abs(fft / N)
-    return fft_theo
+    # fft_theo = np.abs(fft / N)
+    return fft
+
+
+def fft_function_2(signal):
+    def factor(pk, n):
+        angle = -2 * math.pi / n * pk
+        return complex(math.cos(angle), math.sin(angle))
+
+    def inner_fft(signal, p, level_factor):
+        n = len(signal)
+        next_n = n // 2
+        next_p = p % next_n
+        if n > 2:
+            signal_odd = np.array([signal[i] for i in range(1, n) if i % 2 == 1])
+            signal_pair = np.array([signal[i] for i in range(n) if i % 2 == 0])
+            next_factor = factor(next_p, next_n)
+            f_odd = inner_fft(signal_odd, next_p, next_factor)
+            f_pair = inner_fft(signal_pair, next_p, next_factor)
+            return f_pair + level_factor * f_odd
+
+        w_odd = -1 if p % 2 else 1
+        return signal[0] + signal[1] * w_odd
+
+    length = len(signal)
+    result = np.array([inner_fft(signal, p, factor(p, length)) for p in range(length)])
+    real, image = np.array([i.real for i in result]), np.array([i.imag for i in result])
+    return real, image
+
+
+def calculate_timedelta_lab1():
+    time_dict = {}
+    for i in range(1, 6):
+        start = datetime.now()
+        generate_array_of_signals(i * 1000)
+        end = datetime.now()
+        delta = (end - start)
+        time_dict[i * 1000] = delta.microseconds
+    return time_dict
 
 
 if __name__ == '__main__':
@@ -102,3 +143,5 @@ if __name__ == '__main__':
 
     print('\nFourier transformation')
     fft = generate_spectrum(fft_function(lab_1_signal), 'lab3_spectr.png')
+    real, imagine = fft_function_2(lab_1_signal)
+    fft_2 = generate_spectrum(real, 'lab3_spectr_additional_task.png')
