@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -88,6 +90,17 @@ def fft_function(signal):
     fft = np.fft.fft(signal)
     fft_theo = np.abs(fft / N)
     return fft_theo
+
+
+def calculate_timedelta_lab1():
+    time_dict = {}
+    for i in range(1, 6):
+        start = datetime.now()
+        generate_array_of_signals(i * 1000)
+        end = datetime.now()
+        delta = (end - start)
+        time_dict[i * 1000] = delta.microseconds
+    return time_dict
 
 
 if __name__ == '__main__':
